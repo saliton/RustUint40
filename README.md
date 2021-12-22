@@ -1,3 +1,5 @@
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Soliton-Analytics-Team/RustUint40/blob/main/RustUint40.ipynb)
+
 # Rustで整数を5バイトに押し込む簡単なお仕事
 
 ## はじめに
