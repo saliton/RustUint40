@@ -23,7 +23,7 @@ Rustで整数を40bitでストレージに読み書きする方法について�
 %cd measure
 ```
 
-     [0m [0m [1m [32m     Created [0m binary (application) `measure` package
+    Created binary (application) `measure` package
     /content/measure
 
 
@@ -117,9 +117,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.53s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.53s
+    Running `target/release/measure`
     11.795 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
@@ -177,9 +177,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.50s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.50s
+    Running `target/release/measure`
     0.000 sec
 
 
@@ -250,9 +250,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.55s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.55s
+    Running `target/release/measure`
     11.777 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
@@ -316,9 +316,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.57s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.57s
+    Running `target/release/measure`
     7.133 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
@@ -383,9 +383,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.53s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.53s
+    Running `target/release/measure`
     7.170 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
@@ -451,9 +451,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.58s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.58s
+    Running `target/release/measure`
     7.242 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
@@ -521,9 +521,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.60s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.60s
+    Running `target/release/measure`
     24.457 sec
     8845746833903097824
 
@@ -589,9 +589,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.58s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.58s
+    Running `target/release/measure`
     31.003 sec
     8845746833903097824
 
@@ -651,9 +651,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.65s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.65s
+    Running `target/release/measure`
     19.501 sec
     8845746833903097824
 
@@ -713,9 +713,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.58s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.58s
+    Running `target/release/measure`
     19.346 sec
     8845746833903097824
 
@@ -775,9 +775,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.60s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.60s
+    Running `target/release/measure`
     19.390 sec
     8845746833903097824
 
@@ -849,9 +849,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.54s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.54s
+    Running `target/release/measure`
     22.381 sec
     [205, 178, 63, 42, 187]
     63749253
@@ -919,9 +919,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.53s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.53s
+    Running `target/release/measure`
     22.303 sec
     [205, 178, 63, 42, 187]
     63749253
@@ -986,9 +986,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.53s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.53s
+    Running `target/release/measure`
     11.357 sec
     [205, 178, 63, 42, 187]
     63749253
@@ -1055,9 +1055,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.54s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.54s
+    Running `target/release/measure`
     11.211 sec
     [205, 178, 63, 42, 187]
     63749253
@@ -1123,9 +1123,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.54s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.54s
+    Running `target/release/measure`
     10.668 sec
     [205, 178, 63, 42, 187]
     63749253
@@ -1191,9 +1191,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.55s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.55s
+    Running `target/release/measure`
     10.604 sec
     [205, 178, 63, 42, 187]
     63749253
@@ -1256,9 +1256,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.59s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.59s
+    Running `target/release/measure`
     23.175 sec
     1666958173003018432
 
@@ -1315,9 +1315,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.57s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.57s
+    Running `target/release/measure`
     23.188 sec
     1666958173003018432
 
@@ -1371,9 +1371,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.59s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.59s
+    Running `target/release/measure`
     19.736 sec
     1666958173003018432
 
@@ -1427,9 +1427,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.61s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.61s
+    Running `target/release/measure`
     23.203 sec
     1666958173003018432
 
@@ -1483,9 +1483,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.59s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.59s
+    Running `target/release/measure`
     23.502 sec
     1666958173003018432
 
@@ -1543,9 +1543,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.60s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.60s
+    Running `target/release/measure`
     27.194 sec
     1666958173003018432
 
@@ -1606,9 +1606,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.58s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.58s
+    Running `target/release/measure`
     19.383 sec
     1666958173003018432
 
@@ -1666,9 +1666,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.58s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.58s
+    Running `target/release/measure`
     23.207 sec
     1666958173003018432
 
@@ -1720,9 +1720,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.59s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.59s
+    Running `target/release/measure`
     23.126 sec
     1666958173003018432
 
@@ -1774,9 +1774,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.57s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.57s
+    Running `target/release/measure`
     23.445 sec
     1666958173003018432
 
@@ -1850,9 +1850,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.50s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.50s
+    Running `target/release/measure`
     21.872 sec
     205
     63749253
@@ -1921,9 +1921,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.52s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.52s
+    Running `target/release/measure`
     21.806 sec
     205
     63749253
@@ -1992,9 +1992,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.53s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.53s
+    Running `target/release/measure`
     21.861 sec
     205
     63749253
@@ -2059,9 +2059,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.51s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.51s
+    Running `target/release/measure`
     6.949 sec
     205
     63749253
@@ -2129,9 +2129,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.49s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.49s
+    Running `target/release/measure`
     21.323 sec
     54987966921384494
 
@@ -2193,9 +2193,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.49s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.49s
+    Running `target/release/measure`
     7.901 sec
     54987966921384494
 
@@ -2254,9 +2254,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.47s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.47s
+    Running `target/release/measure`
     7.885 sec
     54987966921384494
 
@@ -2315,9 +2315,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.50s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.50s
+    Running `target/release/measure`
     7.903 sec
     54987966921384494
 
@@ -2377,9 +2377,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.49s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.49s
+    Running `target/release/measure`
     5.505 sec
     54987966921384494
 
@@ -2439,9 +2439,9 @@ fn main() {
 !cargo run --release
 ```
 
-     [0m [0m [1m [32m   Compiling [0m measure v0.1.0 (/content/measure)
-     [0m [0m [1m [32m    Finished [0m release [optimized] target(s) in 0.48s
-     [0m [0m [1m [32m     Running [0m `target/release/measure`
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.48s
+    Running `target/release/measure`
     7.162 sec
     54987966921384494
 
