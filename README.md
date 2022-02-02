@@ -4,21 +4,69 @@
 
 ## はじめに
 
-Rustで整数を40bitでストレージに読み書きする方法について調べました。[以前の記事](https://www.soliton-cyber.com/blog/go-uint-40)でGo言語で同じことをやっています。
+ビッグデータを処理するような場合、データの読み込みが律速になることが多いです。その場合、データのストレージ上のサイズが小さくなると読み込み時間が減り、全体の処理時間が半分になったりします。そんな時、整数が40bitで十分ならば、40bitで保持したいですね。というわけで、Rustで整数を40bitでストレージに読み書きする方法について調べました。[以前の記事](https://www.soliton-cyber.com/blog/go-uint-40)でGo言語で同じことをやっています。
+
+> ※ インデックス算出の際に時間計測に含めるべきではない演算を行っていたので、それを排除した内容に差し替えました。　　
 
 まずは、Rustをインストールします。
 
 
-```shell
+  ```shell
 !wget https://static.rust-lang.org/rustup/rustup-init.sh
 !sh rustup-init.sh -y
 !cp /root/.cargo/bin/* /usr/local/bin
 ```
 
+    --2022-01-22 16:44:50--  https://static.rust-lang.org/rustup/rustup-init.sh
+    Resolving static.rust-lang.org (static.rust-lang.org)... 18.64.236.58, 18.64.236.29, 18.64.236.83, ...
+    Connecting to static.rust-lang.org (static.rust-lang.org)|18.64.236.58|:443... connected.
+    HTTP request sent, awaiting response... 200 OK
+    Length: 21102 (21K) [text/x-sh]
+    Saving to: ‘rustup-init.sh’
+    
+    rustup-init.sh      100%[===================>]  20.61K  --.-KB/s    in 0.004s
+    
+    2022-01-22 16:44:50 (5.52 MB/s) - ‘rustup-init.sh’ saved [21102/21102]
+    
+    info: downloading installer
+    info: profile set to 'default'
+    info: default host triple is x86_64-unknown-linux-gnu
+    info: syncing channel updates for 'stable-x86_64-unknown-linux-gnu'
+    info: latest update on 2022-01-20, rust version 1.58.1 (db9d1b20b 2022-01-20)
+    info: downloading component 'cargo'
+    info: downloading component 'clippy'
+    info: downloading component 'rust-docs'
+    info: downloading component 'rust-std'
+    info: downloading component 'rustc'
+    info: downloading component 'rustfmt'
+    info: installing component 'cargo'
+    info: installing component 'clippy'
+    info: installing component 'rust-docs'
+     18.9 MiB /  18.9 MiB (100 %)   3.7 MiB/s in  5s ETA:  0s
+    info: installing component 'rust-std'
+     25.0 MiB /  25.0 MiB (100 %)   8.8 MiB/s in  3s ETA:  0s
+    info: installing component 'rustc'
+     53.2 MiB /  53.2 MiB (100 %)  10.3 MiB/s in  5s ETA:  0s
+    info: installing component 'rustfmt'
+    info: default toolchain set to 'stable-x86_64-unknown-linux-gnu'
+    
+      stable-x86_64-unknown-linux-gnu installed - rustc 1.58.1 (db9d1b20b 2022-01-20)
+    
+    
+    Rust is installed now. Great!
+    
+    To get started you may need to restart your current shell.
+    This would reload your PATH environment variable to include
+    Cargo's bin directory ($HOME/.cargo/bin).
+    
+    To configure your current shell, run:
+    source $HOME/.cargo/env
+
+
 検証用のプロジェクトを作成して、カレントディレクトリを移動します。
 
 
-```shell
+  ```shell
 !cargo new measure
 %cd measure
 ```
@@ -30,7 +78,7 @@ Rustで整数を40bitでストレージに読み書きする方法について�
 環境設定ファイルを生成します。
 
 
-```toml
+```Rust
 %%writefile Cargo.toml
 
 [package]
@@ -50,17 +98,17 @@ rand = "0.8.4"
 
 > `to_le_bytes()`がおすすめ
 
-まずは64bitの整数をバイト配列にする方法を調べます。(以下では整数のエンコーディングはリトルエンディアンにします。特にunsafeがらみではビックエンディアンのCPUでは間違った動作になりますのでご注意ください。)
+まずは64bitの整数をバイト配列にする方法を調べます。(以下では整数のエンコーディングはリトルエンディアンにします。特にunsafeがらみではビッグエンディアンのCPUでは間違った動作になりますのでご注意ください。)
 
 愚直だとこうでしょうか。
-```rust
+```
 for j in 0..8 {
     buf[j] = (v >> (8 * j)) as u8;
 }
 ```
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -79,12 +127,13 @@ fn main() {
 
     // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        let v = vs[idx];
-        let b = &mut buf[idx];
-        for j in 0..8 {
-            b[j] = (v >> (8 * j)) as u8;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let v = vs[idx];
+            let b = &mut buf[idx];
+            for j in 0..8 {
+                b[j] = (v >> (8 * j)) as u8;
+            }
         }
     }
     let end = start.elapsed();
@@ -113,14 +162,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.53s
+    Finished release [optimized] target(s) in 0.64s
     Running `target/release/measure`
-    11.795 sec
+    7.969 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
 
@@ -130,7 +179,7 @@ fn main() {
 ここで、参考のため、時間測定外の処理をなくして計測してみます。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -148,12 +197,13 @@ fn main() {
 
     // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        let v = vs[idx];
-        let b = &mut buf[idx];
-        for j in 0..8 {
-            b[j] = (v >> (8 * j)) as u8;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let v = vs[idx];
+            let b = &mut buf[idx];
+            for j in 0..8 {
+                b[j] = (v >> (8 * j)) as u8;
+            }
         }
     }
     let end = start.elapsed();
@@ -173,12 +223,12 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.50s
+    Finished release [optimized] target(s) in 0.52s
     Running `target/release/measure`
     0.000 sec
 
@@ -189,7 +239,7 @@ fn main() {
 それでは内側のfor文を展開してみましょう。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -207,18 +257,19 @@ fn main() {
 
     // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        let v = vs[idx];
-        let b = &mut buf[idx];
-        b[0] = v as u8;
-        b[1] = (v >> 8) as u8;
-        b[2] = (v >> 16) as u8;
-        b[3] = (v >> 24) as u8;
-        b[4] = (v >> 32) as u8;
-        b[5] = (v >> 40) as u8;
-        b[6] = (v >> 48) as u8;
-        b[7] = (v >> 56) as u8;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let v = vs[idx];
+            let b = &mut buf[idx];
+            b[0] = v as u8;
+            b[1] = (v >> 8) as u8;
+            b[2] = (v >> 16) as u8;
+            b[3] = (v >> 24) as u8;
+            b[4] = (v >> 32) as u8;
+            b[5] = (v >> 40) as u8;
+            b[6] = (v >> 48) as u8;
+            b[7] = (v >> 56) as u8;
+        }
     }
     let end = start.elapsed();
     // 計測終了
@@ -246,14 +297,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.55s
+    Finished release [optimized] target(s) in 0.56s
     Running `target/release/measure`
-    11.777 sec
+    7.861 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
 
@@ -264,7 +315,7 @@ fn main() {
 Rustでは整数に対してto_le_bytes()というそのものズバリの関数が用意されていました。それを使用してみます。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -282,9 +333,10 @@ fn main() {
 
     // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        buf[idx] = vs[idx].to_le_bytes();
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            buf[idx] = vs[idx].to_le_bytes();
+        }
     }
     let end = start.elapsed();
     // 計測終了
@@ -312,14 +364,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.57s
+    Finished release [optimized] target(s) in 0.54s
     Running `target/release/measure`
-    7.133 sec
+    3.801 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
 
@@ -329,7 +381,7 @@ fn main() {
 次に、整数をバイト配列に変換する別の方法が[某書籍](https://www.amazon.co.jp/dp/B087BZQ48R)で紹介されていたので、試してみます。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -347,10 +399,11 @@ fn main() {
 
     // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        unsafe {
-            buf[idx] = std::mem::transmute::<u64, [u8; 8]>(vs[idx]);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            unsafe {
+                buf[idx] = std::mem::transmute::<u64, [u8; 8]>(vs[idx]);
+            }
         }
     }
     let end = start.elapsed();
@@ -379,14 +432,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.53s
+    Finished release [optimized] target(s) in 0.57s
     Running `target/release/measure`
-    7.170 sec
+    3.957 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
 
@@ -396,7 +449,7 @@ fn main() {
 どうせunsafeを使うなら、最後に、ポインターを使う技を試してみましょう。当初、どう型を定義してよいかわからず、コンパイラーに随分怒られました。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -414,11 +467,12 @@ fn main() {
 
     // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        unsafe {
-            let ptr: *mut u64 = buf[idx].as_ptr() as *mut u64;
-            *ptr = vs[idx];
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            unsafe {
+                let ptr: *mut u64 = buf[idx].as_ptr() as *mut u64;
+                *ptr = vs[idx];
+            }
         }
     }
     let end = start.elapsed();
@@ -447,14 +501,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.58s
+    Finished release [optimized] target(s) in 0.55s
     Running `target/release/measure`
-    7.242 sec
+    3.915 sec
     [205, 178, 63, 42, 187, 0, 0, 0]
     63749253
 
@@ -470,7 +524,7 @@ fn main() {
 まずは愚直な方法です。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -495,10 +549,12 @@ fn main() {
     // 計測開始
     let start = Instant::now();
     let mut v: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[(i % SIZE) as usize];
-        for j in 0..8 {
-            v += (b[j] as u64) << (8 * j);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            for j in 0..8 {
+                v += (b[j] as u64) << (8 * j);
+            }
         }
     }
     let end = start.elapsed();
@@ -517,14 +573,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
     Finished release [optimized] target(s) in 0.60s
     Running `target/release/measure`
-    24.457 sec
+    11.566 sec
     8845746833903097824
 
 
@@ -533,7 +589,7 @@ fn main() {
 内側のfor文を展開します。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -558,16 +614,18 @@ fn main() {
     // 計測開始
     let start = Instant::now();
     let mut v: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[(i % SIZE) as usize];
-        v += b[0] as u64;
-        v += (b[1] as u64) << 8;
-        v += (b[2] as u64) << 16;
-        v += (b[3] as u64) << 24;
-        v += (b[4] as u64) << 32;
-        v += (b[5] as u64) << 40;
-        v += (b[6] as u64) << 48;
-        v += (b[7] as u64) << 56;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            v += b[0] as u64;
+            v += (b[1] as u64) << 8;
+            v += (b[2] as u64) << 16;
+            v += (b[3] as u64) << 24;
+            v += (b[4] as u64) << 32;
+            v += (b[5] as u64) << 40;
+            v += (b[6] as u64) << 48;
+            v += (b[7] as u64) << 56;
+        }
     }
     let end = start.elapsed();
     // 計測終了
@@ -585,76 +643,76 @@ fn main() {
 
 
 
-```shell
+  ```shell
+!cargo run --release
+```
+
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.66s
+    Running `target/release/measure`
+    18.503 sec
+    8845746833903097824
+
+
+展開した方が処理時間が長くなる結果になりました。展開するよりも効率の良い最適化がなされるようになったのかもしれません。
+
+次に、関数を使いましょう。
+
+
+```Rust
+%%writefile src/main.rs
+use rand;
+use rand::prelude::*;
+use std::time::Instant;
+
+fn main() {
+    const COUNT: usize = 10_000_000_000;
+    const SIZE: usize = 100_000;
+    let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
+    let mut buf: Vec<[u8; 8]> = Vec::new();
+    for _ in 0..SIZE {
+        buf.push([rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8])
+    }
+
+    // 計測開始
+    let start = Instant::now();
+    let mut v: u64 = 0;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            v += u64::from_le_bytes(buf[idx]);
+        }
+    }
+    let end = start.elapsed();
+    // 計測終了
+
+    println!(
+        "{}.{:03} sec",
+        end.as_secs(),
+        end.subsec_nanos() / 1_000_000
+    );
+    println!("{}", v);
+}
+```
+
+    Overwriting src/main.rs
+
+
+
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
     Finished release [optimized] target(s) in 0.58s
     Running `target/release/measure`
-    31.003 sec
-    8845746833903097824
-
-
-~~25%ほど処理時間が短くなりました。内側の処理が複雑なので、最適化によるfor文の展開はなされていなかったようです。~~
-
-逆に展開した方が処理時間が長くなる結果になりました。展開するよりも効率の良い最適化がなされるようになったのかもしれません。
-
-次に、関数を使いましょう。
-
-
-```rust
-%%writefile src/main.rs
-use rand;
-use rand::prelude::*;
-use std::time::Instant;
-
-fn main() {
-    const COUNT: usize = 10_000_000_000;
-    const SIZE: usize = 100_000;
-    let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
-    let mut buf: Vec<[u8; 8]> = Vec::new();
-    for _ in 0..SIZE {
-        buf.push([rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8])
-    }
-
-    // 計測開始
-    let start = Instant::now();
-    let mut v: u64 = 0;
-    for i in 0..COUNT {
-        v += u64::from_le_bytes(buf[(i % SIZE) as usize]);
-    }
-    let end = start.elapsed();
-    // 計測終了
-
-    println!(
-        "{}.{:03} sec",
-        end.as_secs(),
-        end.subsec_nanos() / 1_000_000
-    );
-    println!("{}", v);
-}
-```
-
-    Overwriting src/main.rs
-
-
-
-```shell
-!cargo run --release
-```
-
-    Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.65s
-    Running `target/release/measure`
-    19.501 sec
+    5.717 sec
     8845746833903097824
 
 
@@ -663,7 +721,7 @@ fn main() {
 別の関数による方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -688,9 +746,11 @@ fn main() {
     // 計測開始
     let start = Instant::now();
     let mut v: u64 = 0;
-    for i in 0..COUNT {
-        unsafe {
-            v += std::mem::transmute::<[u8; 8], u64>(buf[(i % SIZE) as usize]);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            unsafe {
+                v += std::mem::transmute::<[u8; 8], u64>(buf[idx]);
+            }
         }
     }
     let end = start.elapsed();
@@ -709,14 +769,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.58s
+    Finished release [optimized] target(s) in 0.59s
     Running `target/release/measure`
-    19.346 sec
+    5.691 sec
     8845746833903097824
 
 
@@ -725,7 +785,7 @@ fn main() {
 次はunsafeを使った方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -750,9 +810,11 @@ fn main() {
     // 計測開始
     let start = Instant::now();
     let mut v: u64 = 0;
-    for i in 0..COUNT {
-        unsafe {
-            v += *(buf[(i % SIZE) as usize].as_ptr() as *mut u64);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            unsafe {
+                v += *(buf[idx].as_ptr() as *mut u64);
+            }
         }
     }
     let end = start.elapsed();
@@ -771,14 +833,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.60s
+    Finished release [optimized] target(s) in 0.59s
     Running `target/release/measure`
-    19.390 sec
+    5.787 sec
     8845746833903097824
 
 
@@ -792,7 +854,7 @@ fn main() {
 まずは愚直な方法です。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -811,12 +873,13 @@ fn main() {
 
     // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i %SIZE;
-        let v = vs[idx];
-        let b = &mut buf[idx];
-        for j in 0..5 {
-            b[j] = (v >> (8 * j)) as u8;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let v = vs[idx];
+            let b = &mut buf[idx];
+            for j in 0..5 {
+                b[j] = (v >> (8 * j)) as u8;
+            }
         }
     }
     let end = start.elapsed();
@@ -845,14 +908,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.54s
+    Finished release [optimized] target(s) in 0.57s
     Running `target/release/measure`
-    22.381 sec
+    21.764 sec
     [205, 178, 63, 42, 187]
     63749253
 
@@ -862,7 +925,7 @@ fn main() {
 内側のforループを展開するとどうなるでしょうか。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -879,18 +942,21 @@ fn main() {
 
     let mut buf: [[u8; 5]; SIZE] = [[0; 5]; SIZE];
 
+    // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        let v = vs[idx];
-        let b = &mut buf[idx];
-        b[0] = v as u8;
-        b[1] = (v >> 8) as u8;
-        b[2] = (v >> 16) as u8;
-        b[3] = (v >> 24) as u8;
-        b[4] = (v >> 32) as u8;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let v = vs[idx];
+            let b = &mut buf[idx];
+            b[0] = v as u8;
+            b[1] = (v >> 8) as u8;
+            b[2] = (v >> 16) as u8;
+            b[3] = (v >> 24) as u8;
+            b[4] = (v >> 32) as u8;
+        }
     }
     let end = start.elapsed();
+    // 計測終了
 
     println!(
         "{}.{:03} sec",
@@ -915,14 +981,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.53s
+    Finished release [optimized] target(s) in 0.54s
     Running `target/release/measure`
-    22.303 sec
+    21.827 sec
     [205, 178, 63, 42, 187]
     63749253
 
@@ -932,7 +998,7 @@ fn main() {
 次に関数利用です。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -948,16 +1014,19 @@ fn main() {
     }
     let mut buf: [[u8;5]; SIZE] = [[0; 5]; SIZE];
 
+    // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        let dst = &mut buf[idx];
-        let src = vs[idx].to_le_bytes();
-        for j in 0..5 {
-            dst[j] = src[j];
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let dst = &mut buf[idx];
+            let src = vs[idx].to_le_bytes();
+            for j in 0..5 {
+                dst[j] = src[j];
+            }
         }
     }
     let end = start.elapsed();
+    // 計測終了
 
     println!(
         "{}.{:03} sec",
@@ -982,14 +1051,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.53s
+    Finished release [optimized] target(s) in 0.59s
     Running `target/release/measure`
-    11.357 sec
+    10.318 sec
     [205, 178, 63, 42, 187]
     63749253
 
@@ -999,7 +1068,7 @@ fn main() {
 別の関数ではどうでしょうか。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -1015,14 +1084,87 @@ fn main() {
     }
     let mut buf: [[u8;5]; SIZE] = [[0; 5]; SIZE];
 
+    // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        unsafe {
-            let dst = &mut buf[idx];
-            let src = std::mem::transmute::<u64, [u8; 8]>(vs[idx]);
-            for j in 0..5 {
-                dst[j] = src[j];
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            unsafe {
+                let dst = &mut buf[idx];
+                let src = std::mem::transmute::<u64, [u8; 8]>(vs[idx]);
+                for j in 0..5 {
+                    dst[j] = src[j];
+                }
+            }
+        }
+    }
+    let end = start.elapsed();
+    // 計測終了
+
+    println!(
+        "{}.{:03} sec",
+        end.as_secs(),
+        end.subsec_nanos() / 1_000_000
+    );
+
+    // 時間測定外の処理
+    println!("{:?}", buf[0]);
+    let mut total: usize = 0;
+    for i in 0..SIZE {
+        for j in 0..5 {
+            total += buf[i][j] as usize;
+        }
+    }
+    println!("{}", total);
+}
+
+```
+
+    Overwriting src/main.rs
+
+
+
+  ```shell
+!cargo run --release
+```
+
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.54s
+    Running `target/release/measure`
+    10.411 sec
+    [205, 178, 63, 42, 187]
+    63749253
+
+
+同じでした。
+
+次はポインター利用です。
+
+
+```Rust
+%%writefile src/main.rs
+use std::time::Instant;
+use rand;
+use rand::prelude::*;
+
+fn main() {
+    const COUNT: usize = 10_000_000_000;
+    const SIZE: usize = 100_000;
+    let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
+    let mut vs: [u64; SIZE] = [0; SIZE];
+    for i in 0..SIZE {
+        vs[i] = rng.gen_range(0..(1<<40));
+    }
+    let mut buf: [[u8;5]; SIZE] = [[0; 5]; SIZE];
+
+    // 計測開始
+    let start = Instant::now();
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let v = vs[idx];
+            let b = &mut buf[idx];
+            unsafe {
+                *(b.as_ptr() as *mut u32) = v as u32;
+                b[4] = (v >> 32) as u8;
             }
         }
     }
@@ -1051,92 +1193,24 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.54s
+    Finished release [optimized] target(s) in 0.58s
     Running `target/release/measure`
-    11.211 sec
+    10.428 sec
     [205, 178, 63, 42, 187]
     63749253
 
 
-同じでした。
-
-次はポインター利用です。
-
-
-```rust
-%%writefile src/main.rs
-use std::time::Instant;
-use rand;
-use rand::prelude::*;
-
-fn main() {
-    const COUNT: usize = 10_000_000_000;
-    const SIZE: usize = 100_000;
-    let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
-    let mut vs: [u64; SIZE] = [0; SIZE];
-    for i in 0..SIZE {
-        vs[i] = rng.gen_range(0..(1<<40));
-    }
-    let mut buf: [[u8;5]; SIZE] = [[0; 5]; SIZE];
-
-    let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        let v = vs[idx];
-        let b = &mut buf[idx];
-        unsafe {
-            *(b.as_ptr() as *mut u32) = v as u32;
-            b[4] = (v >> 32) as u8;
-        }
-    }
-    let end = start.elapsed();
-
-    println!(
-        "{}.{:03} sec",
-        end.as_secs(),
-        end.subsec_nanos() / 1_000_000
-    );
-
-    // 時間測定外の処理
-    println!("{:?}", buf[0]);
-    let mut total: usize = 0;
-    for i in 0..SIZE {
-        for j in 0..5 {
-            total += buf[i][j] as usize;
-        }
-    }
-    println!("{}", total);
-}
-
-```
-
-    Overwriting src/main.rs
-
-
-
-```shell
-!cargo run --release
-```
-
-    Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.54s
-    Running `target/release/measure`
-    10.668 sec
-    [205, 178, 63, 42, 187]
-    63749253
-
-
-少し速くなりました。
+同じです。
 
 型変換に関数を使ってみます。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
@@ -1152,17 +1226,20 @@ fn main() {
     }
     let mut buf: [[u8; 5]; SIZE] = [[0; 5]; SIZE];
 
+    // 計測開始
     let start = Instant::now();
-    for i in 0..COUNT {
-        let idx = i % SIZE;
-        let v = vs[idx];
-        let b = &mut buf[idx];
-        unsafe {
-            *(b.as_ptr() as *mut u32) = v as u32;
-            b[4] = std::mem::transmute::<u64, [u8; 8]>(v)[4];
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let v = vs[idx];
+            let b = &mut buf[idx];
+            unsafe {
+                *(b.as_ptr() as *mut u32) = v as u32;
+                b[4] = std::mem::transmute::<u64, [u8; 8]>(v)[4];
+            }
         }
     }
     let end = start.elapsed();
+    // 計測終了
 
     println!(
         "{}.{:03} sec",
@@ -1187,14 +1264,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.55s
+    Finished release [optimized] target(s) in 0.62s
     Running `target/release/measure`
-    10.604 sec
+    10.443 sec
     [205, 178, 63, 42, 187]
     63749253
 
@@ -1208,7 +1285,7 @@ fn main() {
 まずは愚直な方法
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1229,13 +1306,15 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[(i % SIZE) as usize];
-        let mut v = 0;
-        for j in 0..5 {
-            v += (b[j] as u64) << (8 * j);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            let mut v = 0;
+            for j in 0..5 {
+                v += (b[j] as u64) << (8 * j);
+            }
+            total += v;
         }
-        total += v;
     }
     let end = start.elapsed();
 
@@ -1252,21 +1331,21 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.59s
+    Finished release [optimized] target(s) in 0.63s
     Running `target/release/measure`
-    23.175 sec
+    9.718 sec
     1666958173003018432
 
 
 for文の展開
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1287,14 +1366,16 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[(i % SIZE) as usize];
-        let mut v = b[0] as u64;
-        v += (b[1] as u64) << 8;
-        v += (b[2] as u64) << 16;
-        v += (b[3] as u64) << 24;
-        v += (b[4] as u64) << 32;
-        total += v;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            let mut v = b[0] as u64;
+            v += (b[1] as u64) << 8;
+            v += (b[2] as u64) << 16;
+            v += (b[3] as u64) << 24;
+            v += (b[4] as u64) << 32;
+            total += v;
+        }
     }
     let end = start.elapsed();
 
@@ -1311,14 +1392,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.57s
+    Finished release [optimized] target(s) in 0.61s
     Running `target/release/measure`
-    23.188 sec
+    9.725 sec
     1666958173003018432
 
 
@@ -1327,7 +1408,7 @@ fn main() {
 次に関数利用
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1349,8 +1430,10 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        total += u64::from_le_bytes(buf[i % SIZE]) & 0xFF_FFFF_FFFF;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            total += u64::from_le_bytes(buf[idx]) & 0xFF_FFFF_FFFF;
+        }
     }
     let end = start.elapsed();
 
@@ -1367,23 +1450,23 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.59s
+    Finished release [optimized] target(s) in 0.57s
     Running `target/release/measure`
-    19.736 sec
+    6.793 sec
     1666958173003018432
 
 
-少し速くなりました。
+速くなりました。
 
 40bitに切り詰めるのに別の方法を使ってみます。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1404,9 +1487,11 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = &buf[i % SIZE];
-        total += u64::from_le_bytes([b[0], b[1], b[2], b[3], b[4], 0, 0, 0]);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = &buf[idx];
+            total += u64::from_le_bytes([b[0], b[1], b[2], b[3], b[4], 0, 0, 0]);
+        }
     }
     let end = start.elapsed();
 
@@ -1423,14 +1508,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.61s
+    Finished release [optimized] target(s) in 0.58s
     Running `target/release/measure`
-    23.203 sec
+    10.015 sec
     1666958173003018432
 
 
@@ -1439,7 +1524,7 @@ fn main() {
 さらに別の方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1460,9 +1545,11 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[i % SIZE];
-        total += u32::from_le_bytes([b[0], b[1], b[2], b[3]]) as u64 + ((b[4] as u64) << 32);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            total += u32::from_le_bytes([b[0], b[1], b[2], b[3]]) as u64 + ((b[4] as u64) << 32);
+        }
     }
     let end = start.elapsed();
 
@@ -1479,14 +1566,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.59s
+    Finished release [optimized] target(s) in 0.60s
     Running `target/release/measure`
-    23.502 sec
+    9.995 sec
     1666958173003018432
 
 
@@ -1495,7 +1582,7 @@ fn main() {
 さらに別の方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1516,11 +1603,13 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[i % SIZE];
-        unsafe {
-            let ptr: *mut u32 = b.as_ptr() as *mut u32;
-            total += (*ptr as u64) + ((b[4] as u64) << 32);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            unsafe {
+                let ptr: *mut u32 = b.as_ptr() as *mut u32;
+                total += (*ptr as u64) + ((b[4] as u64) << 32);
+            }
         }
     }
     let end = start.elapsed();
@@ -1539,14 +1628,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.60s
+    Finished release [optimized] target(s) in 0.59s
     Running `target/release/measure`
-    27.194 sec
+    9.483 sec
     1666958173003018432
 
 
@@ -1557,7 +1646,7 @@ fn main() {
 まずは0xFF_FFFF_FFFFマスクを使った方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1579,11 +1668,13 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[i % SIZE];
-        unsafe {
-            let ptr: *mut u64 = b.as_ptr() as *mut u64;
-            total += *ptr & 0xFF_FFFF_FFFF;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            unsafe {
+                let ptr: *mut u64 = b.as_ptr() as *mut u64;
+                total += *ptr & 0xFF_FFFF_FFFF;
+            }
         }
     }
     let end = start.elapsed();
@@ -1602,23 +1693,23 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.58s
+    Finished release [optimized] target(s) in 0.60s
     Running `target/release/measure`
-    19.383 sec
+    6.843 sec
     1666958173003018432
 
 
-速くなりました。どうやらこれが最速のようです。
+速くなりました。
 
 以下、その他の切り詰め方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1639,11 +1730,13 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[i % SIZE];
-        let b = [b[0], b[1], b[2], b[3], b[4], 0, 0, 0];
-        unsafe {
-            total += *(b.as_ptr() as *mut u64);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            let b = [b[0], b[1], b[2], b[3], b[4], 0, 0, 0];
+            unsafe {
+                total += *(b.as_ptr() as *mut u64);
+            }
         }
     }
     let end = start.elapsed();
@@ -1662,75 +1755,21 @@ fn main() {
 
 
 
-```shell
-!cargo run --release
-```
-
-    Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.58s
-    Running `target/release/measure`
-    23.207 sec
-    1666958173003018432
-
-
-遅い。
-
-
-```rust
-%%writefile src/main.rs
-use rand;
-use rand::prelude::*;
-use std::time::Instant;
-
-fn main() {
-    const COUNT: usize = 10_000_000_000;
-    const SIZE: usize = 100_000;
-    let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
-    let mut buf: Vec<[u8; 5]> = Vec::new();
-    for _ in 0..SIZE {
-        buf.push([rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8,
-                  rng.gen_range(0..256) as u8])
-    }
-
-    let start = Instant::now();
-    let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[i % SIZE];
-        total += u64::from_le_bytes([b[0], b[1], b[2], b[3], b[4], 0, 0, 0]);
-    }
-    let end = start.elapsed();
-
-    println!(
-        "{}.{:03} sec",
-        end.as_secs(),
-        end.subsec_nanos() / 1_000_000
-    );
-    println!("{}", total);
-}
-```
-
-    Overwriting src/main.rs
-
-
-
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
     Finished release [optimized] target(s) in 0.59s
     Running `target/release/measure`
-    23.126 sec
+    10.022 sec
     1666958173003018432
 
 
 遅い。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
@@ -1751,9 +1790,11 @@ fn main() {
 
     let start = Instant::now();
     let mut total: u64 = 0;
-    for i in 0..COUNT {
-        let b = buf[i % SIZE];
-        total += (b[0] as u64) + ((b[1] as u64) << 8) + ((b[2] as u64) << 16) + ((b[3] as u64) << 24) + ((b[4] as u64) << 32);
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            total += u64::from_le_bytes([b[0], b[1], b[2], b[3], b[4], 0, 0, 0]);
+        }
     }
     let end = start.elapsed();
 
@@ -1770,14 +1811,70 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.57s
+    Finished release [optimized] target(s) in 0.59s
     Running `target/release/measure`
-    23.445 sec
+    10.024 sec
+    1666958173003018432
+
+
+遅い。
+
+
+```Rust
+%%writefile src/main.rs
+use rand;
+use rand::prelude::*;
+use std::time::Instant;
+
+fn main() {
+    const COUNT: usize = 10_000_000_000;
+    const SIZE: usize = 100_000;
+    let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
+    let mut buf: Vec<[u8; 5]> = Vec::new();
+    for _ in 0..SIZE {
+        buf.push([rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8,
+                  rng.gen_range(0..256) as u8])
+    }
+
+    let start = Instant::now();
+    let mut total: u64 = 0;
+    for _ in 0..COUNT/SIZE {
+        for idx in 0..SIZE {
+            let b = buf[idx];
+            total += (b[0] as u64) + ((b[1] as u64) << 8) + ((b[2] as u64) << 16) + ((b[3] as u64) << 24) + ((b[4] as u64) << 32);
+        }
+    }
+    let end = start.elapsed();
+
+    println!(
+        "{}.{:03} sec",
+        end.as_secs(),
+        end.subsec_nanos() / 1_000_000
+    );
+    println!("{}", total);
+}
+```
+
+    Overwriting src/main.rs
+
+
+
+  ```shell
+!cargo run --release
+```
+
+    Compiling measure v0.1.0 (/content/measure)
+    Finished release [optimized] target(s) in 0.59s
+    Running `target/release/measure`
+    9.969 sec
     1666958173003018432
 
 
@@ -1794,14 +1891,14 @@ fn main() {
 まずは素朴な実装。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
 use rand::prelude::*;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut vs: [u64; SIZE] = [0; SIZE];
@@ -1812,7 +1909,7 @@ fn main() {
     let mut buf: [u8; 5 * SIZE] = [0; 5 * SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for idx in 0..SIZE {
             let v = vs[idx];
             let b = &mut buf[(idx*5)..];
@@ -1846,31 +1943,31 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.50s
+    Finished release [optimized] target(s) in 0.52s
     Running `target/release/measure`
-    21.872 sec
+    21.127 sec
     205
     63749253
 
 
-遅い。Go言語よりも遅いです。
+遅い。
 
 内側のforループの展開。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
 use rand::prelude::*;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut vs: [u64; SIZE] = [0; SIZE];
@@ -1881,7 +1978,7 @@ fn main() {
     let mut buf: [u8; 5 * SIZE] = [0; 5 * SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for idx in 0..SIZE {
             let v = vs[idx];
             let b = &mut buf[(idx*5)..];
@@ -1917,31 +2014,31 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.52s
+    Finished release [optimized] target(s) in 0.53s
     Running `target/release/measure`
-    21.806 sec
+    21.086 sec
     205
     63749253
 
 
-同じです。
+展開しないもとの同じです。Go言語よりも遅いです。
 
 関数利用。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
 use rand::prelude::*;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut vs: [u64; SIZE] = [0; SIZE];
@@ -1952,7 +2049,7 @@ fn main() {
     let mut buf: [u8; 5 * SIZE] = [0; 5 * SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for idx in 0..SIZE {
             let src = vs[idx].to_le_bytes();
             let b = &mut buf[(idx*5)..];
@@ -1988,14 +2085,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.53s
+    Finished release [optimized] target(s) in 0.52s
     Running `target/release/measure`
-    21.861 sec
+    21.153 sec
     205
     63749253
 
@@ -2005,14 +2102,14 @@ fn main() {
 最後にポインター利用。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use std::time::Instant;
 use rand;
 use rand::prelude::*;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut vs: [u64; SIZE] = [0; SIZE];
@@ -2023,7 +2120,7 @@ fn main() {
     let buf: [u8; 5 * SIZE + 3] = [0; 5 * SIZE + 3];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for idx in 0..SIZE {
             unsafe {
                 *(buf[idx*5..].as_ptr() as *mut u64) = vs[idx];
@@ -2055,14 +2152,13 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
-    Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.51s
+    Finished release [optimized] target(s) in 0.01s
     Running `target/release/measure`
-    6.949 sec
+    7.748 sec
     205
     63749253
 
@@ -2076,14 +2172,14 @@ fn main() {
 まずは素朴な実装。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
 use std::time::Instant;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut ans:[u8; SIZE*5] = [0; SIZE*5];
@@ -2095,7 +2191,7 @@ fn main() {
     let mut buf:[u64; SIZE] = [0; SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for i in 0..SIZE {
             let i5 = i * 5;
             let mut v = 0;
@@ -2125,7 +2221,7 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
@@ -2139,14 +2235,14 @@ fn main() {
 内側のforループの展開。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
 use std::time::Instant;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut ans:[u8; SIZE*5] = [0; SIZE*5];
@@ -2158,7 +2254,7 @@ fn main() {
     let mut buf:[u64; SIZE] = [0; SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for i in 0..SIZE {
             let i5 = i * 5;
             let mut v = ans[i5] as u64;
@@ -2189,14 +2285,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.49s
+    Finished release [optimized] target(s) in 0.52s
     Running `target/release/measure`
-    7.901 sec
+    7.934 sec
     54987966921384494
 
 
@@ -2205,14 +2301,14 @@ fn main() {
 関数利用。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
 use std::time::Instant;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut ans:[u8; SIZE*5] = [0; SIZE*5];
@@ -2224,7 +2320,7 @@ fn main() {
     let mut buf:[u64; SIZE] = [0; SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for i in 0..SIZE {
             let i5 = i * 5;
             buf[i] = u64::from_le_bytes([ans[i5], ans[i5+1], ans[i5+2], ans[i5+3], ans[i5+4], 0, 0, 0]);
@@ -2250,14 +2346,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.47s
+    Finished release [optimized] target(s) in 0.53s
     Running `target/release/measure`
-    7.885 sec
+    7.918 sec
     54987966921384494
 
 
@@ -2266,14 +2362,14 @@ fn main() {
 別の集計方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
 use std::time::Instant;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut ans:[u8; SIZE*5] = [0; SIZE*5];
@@ -2285,7 +2381,7 @@ fn main() {
     let mut buf:[u64; SIZE] = [0; SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for i in 0..SIZE {
             let i5 = i * 5;
             buf[i] = (u32::from_le_bytes([ans[i5], ans[i5+1], ans[i5+2], ans[i5+3]]) as u64) + ((ans[i5+4] as u64) << 32);
@@ -2311,14 +2407,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
     Finished release [optimized] target(s) in 0.50s
     Running `target/release/measure`
-    7.903 sec
+    7.912 sec
     54987966921384494
 
 
@@ -2327,14 +2423,14 @@ fn main() {
 0xFF_FFFF_FFFFのマスクによる集計方法。
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
 use std::time::Instant;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut ans:[u8; SIZE*5] = [0; SIZE*5];
@@ -2346,7 +2442,7 @@ fn main() {
     let mut buf:[u64; SIZE] = [0; SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for idx in 0..SIZE {
             unsafe {
                 buf[idx] = *(ans[idx*5..].as_ptr() as *mut u64) & 0xFF_FFFF_FFFF;
@@ -2373,14 +2469,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.49s
+    Finished release [optimized] target(s) in 0.51s
     Running `target/release/measure`
-    5.505 sec
+    6.419 sec
     54987966921384494
 
 
@@ -2389,14 +2485,14 @@ fn main() {
 念のため、
 
 
-```rust
+```Rust
 %%writefile src/main.rs
 use rand;
 use rand::prelude::*;
 use std::time::Instant;
 
 fn main() {
-    const COUNT: usize = 100_000;
+    const COUNT: usize = 10_000_000_000;
     const SIZE: usize = 100_000;
     let mut rng: rand::rngs::StdRng = rand::SeedableRng::seed_from_u64(0);
     let mut ans:[u8; SIZE*5] = [0; SIZE*5];
@@ -2408,7 +2504,7 @@ fn main() {
     let mut buf:[u64; SIZE] = [0; SIZE];
 
     let start = Instant::now();
-    for _ in 0..COUNT {
+    for _ in 0..COUNT/SIZE {
         for idx in 0..SIZE {
             unsafe {
                 buf[idx] = (*(ans[idx*5..].as_ptr() as *mut u32) as u64) + ((ans[idx*5+4] as u64) << 32);
@@ -2435,14 +2531,14 @@ fn main() {
 
 
 
-```shell
+  ```shell
 !cargo run --release
 ```
 
     Compiling measure v0.1.0 (/content/measure)
-    Finished release [optimized] target(s) in 0.48s
+    Finished release [optimized] target(s) in 0.49s
     Running `target/release/measure`
-    7.162 sec
+    7.199 sec
     54987966921384494
 
 
