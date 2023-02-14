@@ -1,10 +1,10 @@
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Soliton-Analytics-Team/RustUint40/blob/main/RustUint40.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/saliton/RustUint40/blob/main/RustUint40.ipynb)
 
 # Rustで整数を5バイトに押し込む簡単なお仕事
 
 ## はじめに
 
-ビッグデータを処理するような場合、データの読み込みが律速になることが多いです。その場合、データのストレージ上のサイズが小さくなると読み込み時間が減り、全体の処理時間が半分になったりします。そんな時、整数が40bitで十分ならば、40bitで保持したいですね。というわけで、Rustで整数を40bitでストレージに読み書きする方法について調べました。[以前の記事](https://www.soliton-cyber.com/blog/go-uint-40)でGo言語で同じことをやっています。
+ビッグデータを処理するような場合、データの読み込みが律速になることが多いです。その場合、データのストレージ上のサイズが小さくなると読み込み時間が減り、全体の処理時間が半分になったりします。そんな時、整数が40bitで十分ならば、40bitで保持したいですね。というわけで、Rustで整数を40bitでストレージに読み書きする方法について調べました。[以前の記事](https://qiita.com/saliton/items/07c6ccbaea1af8ff9737)でGo言語で同じことをやっています。
 
 > ※ インデックス算出の際に時間計測に含めるべきではない演算を行っていたので、それを排除した内容に差し替えました。　　
 
